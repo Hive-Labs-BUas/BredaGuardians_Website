@@ -1,0 +1,14 @@
+node_modules
+.output
+dist
+.env
+.env.*
+.git
+.github
+.DS_Store
+*.log
+dockerfile
+docker-compose.yml
+.dockerignore
+supabase
+dummy-site

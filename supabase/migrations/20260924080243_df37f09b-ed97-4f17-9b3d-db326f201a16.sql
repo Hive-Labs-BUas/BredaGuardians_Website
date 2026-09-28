@@ -1,0 +1,1 @@
+INSERT INTO public.site_images (key, label, url, sort_order) VALUES ('minecraft', 'Minecraft section picture', '', 100) ON CONFLICT (key) DO NOTHING;

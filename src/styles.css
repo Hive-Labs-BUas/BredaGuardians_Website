@@ -1,0 +1,1181 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * BREDA GUARDIANS DESIGN SYSTEM
+ * Dark-first competitive esports identity.
+ *   background  #0A0A0A  deep near-black
+ *   surface     #1A1A1A  card / section surface
+ *   surface-2   #1E1E1E  raised surface
+ *   gold        #F4D808  primary accent, used boldly
+ *   foreground  #FAFAFA  off-white (never pure white)
+ * Display type: Rajdhani (condensed technical). UI/body type: Inter.
+ * Radius: 14px everywhere. No square corners.
+ */
+
+@theme inline {
+  --font-display: "Rajdhani", "Anton", Impact, system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 3px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 10px);
+  --radius-3xl: calc(var(--radius) + 16px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-gold: var(--primary);
+  --color-gold-bright: var(--gold-bright);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --shadow-gold: 0 0 0 1px color-mix(in oklab, #f4d808 35%, transparent), 0 18px 60px -20px color-mix(in oklab, #f4d808 45%, transparent);
+  --shadow-surface: 0 24px 60px -30px oklch(0 0 0 / 0.9);
+
+  --animate-marquee: marquee 32s linear infinite;
+  --animate-marquee-slow: marquee 55s linear infinite;
+  --animate-bounce-soft: bounce-soft 1.8s ease-in-out infinite;
+  --animate-fade-up: fade-up 0.32s ease-out both;
+  --animate-fade-in: fade-in 0.25s ease-out both;
+  --animate-glow: glow 5s ease-in-out infinite;
+}
+
+:root {
+  --radius: 0.5rem;
+
+  --background: oklch(0.11 0.005 90);
+  --foreground: oklch(0.985 0 0); /* #FAFAFA */
+  --surface: oklch(0.15 0.008 90);
+  --surface-2: oklch(0.19 0.01 90);
+  --card: oklch(0.15 0.008 90);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.15 0.008 90);
+  --popover-foreground: oklch(0.985 0 0);
+
+  --primary: oklch(0.83 0.17 85);
+  --primary-foreground: oklch(0.16 0.01 95);
+  --gold-bright: oklch(0.9 0.15 92);
+
+  --secondary: oklch(0.22 0.01 90);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.2 0.008 90);
+  --muted-foreground: oklch(0.72 0.015 90);
+  --accent: oklch(0.22 0.01 90);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.62 0.21 25);
+  --destructive-foreground: oklch(0.98 0 0);
+
+  --border: oklch(0.28 0.012 90);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.83 0.17 85);
+
+  --sidebar: oklch(0.15 0.008 90);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.83 0.17 85);
+  --sidebar-primary-foreground: oklch(0.145 0 0);
+  --sidebar-accent: oklch(0.245 0 0);
+  --sidebar-accent-foreground: oklch(0.965 0 0);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.83 0.17 85);
+
+  --site-max: 80rem;
+}
+
+@media (min-width: 1600px) {
+  :root {
+    --site-max: 88rem;
+  }
+}
+
+@media (min-width: 2100px) {
+  :root {
+    --site-max: 96rem;
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes bounce-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translateY(8px);
+    opacity: 1;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+@keyframes hero-media-drift {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -10px;
+  }
+}
+
+@keyframes hero-video-drift {
+  from {
+    transform: scale(1.015);
+  }
+  to {
+    transform: scale(1.055) translate3d(-0.5%, -0.5%, 0);
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Keyboard users always see where they are */
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+  }
+
+  /* Ultra-wide / 4K: scale the whole rem-based system up so the site
+     never looks like a small column lost in the middle of the screen. */
+  @media (min-width: 2100px) {
+    html {
+      font-size: 18px;
+    }
+  }
+  @media (min-width: 2800px) {
+    html {
+      font-size: 21px;
+    }
+  }
+  @media (min-width: 3600px) {
+    html {
+      font-size: 24px;
+    }
+  }
+
+  body {
+    /* Subtle top-to-bottom depth, still reads as black at a glance */
+    background-color: var(--color-background);
+    /* Warm gold-tinted depth + faint diagonal pinstripe weave */
+    background-image:
+      repeating-linear-gradient(
+        135deg,
+        oklch(0.98 0.005 100 / 0.018) 0 1px,
+        transparent 1px 14px
+      ),
+      radial-gradient(
+        120% 60% at 50% 0%,
+        color-mix(in oklab, var(--primary) 7%, transparent) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        80% 50% at 100% 100%,
+        color-mix(in oklab, var(--primary) 4%, transparent) 0%,
+        transparent 65%
+      ),
+      linear-gradient(
+        180deg,
+        oklch(0.115 0.006 90) 0%,
+        oklch(0.14 0.01 90) 50%,
+        oklch(0.11 0.006 90) 100%
+      );
+    background-attachment: fixed;
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 0.98;
+    text-transform: uppercase;
+  }
+
+  ::selection {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+}
+
+/* ---- Reusable structural utilities ---- */
+
+@utility container-site {
+  width: 100%;
+  margin-inline: auto;
+  max-width: var(--site-max);
+  padding-inline: 1.25rem;
+  @media (min-width: 768px) {
+    padding-inline: 2rem;
+  }
+  /* Wide desktops and 4K: let content breathe wider instead of clamping at 1280px */
+  @media (min-width: 1600px) {
+    padding-inline: 2.5rem;
+  }
+  @media (min-width: 2100px) {
+    padding-inline: 3rem;
+  }
+}
+
+@utility container-text {
+  width: 100%;
+  max-width: 48rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  @media (min-width: 768px) {
+    padding-inline: 2rem;
+  }
+}
+
+
+/* Vertical rhythm: comfortable on desktop, tighter on phones */
+@utility section-y {
+  padding-block: 3rem;
+  @media (min-width: 768px) {
+    padding-block: 4.5rem;
+  }
+}
+
+/* Compact rhythm for narrow bands (stat strips, marquees, closing CTAs) */
+@utility section-y-sm {
+  padding-block: 2rem;
+  @media (min-width: 768px) {
+    padding-block: 2.75rem;
+  }
+}
+
+/* First section directly under a page header: tighter top, full bottom */
+@utility section-y-first {
+  padding-top: 2rem;
+  padding-bottom: 3rem;
+  @media (min-width: 768px) {
+    padding-top: 2.5rem;
+    padding-bottom: 4.5rem;
+  }
+}
+
+@utility article-shell {
+  position: relative;
+  padding-block: 2.75rem;
+  background: linear-gradient(180deg, color-mix(in oklab, var(--surface) 45%, transparent), transparent 18rem);
+  @media (min-width: 768px) {
+    padding-block: 4.5rem;
+  }
+}
+
+@utility article-prose {
+  width: 100%;
+  max-width: 68rem;
+}
+
+@utility article-facts {
+  border-top: 2px solid var(--primary);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  background: color-mix(in oklab, var(--surface-2) 92%, transparent);
+  box-shadow: var(--shadow-surface);
+}
+
+@utility article-fact-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted-foreground);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+@utility article-action {
+  margin-top: 2rem;
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid color-mix(in oklab, var(--primary) 50%, transparent);
+  border-radius: var(--radius-lg);
+  padding-inline: 1.25rem;
+  color: var(--primary);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+/* Route change transition: brief fade + slight rise */
+@utility page-enter {
+  animation: page-enter 260ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+/* Footer accent: slim gold strip with an inline Discord CTA */
+@utility footer-accent-strip {
+  background-image: linear-gradient(
+    120deg,
+    color-mix(in oklab, var(--primary) 82%, oklch(0.14 0 0)) 0%,
+    var(--primary) 45%,
+    var(--gold-bright) 100%
+  );
+}
+
+/* Cohesive dark footer panel: warm near-black, no stripe texture */
+@utility footer-panel {
+  position: relative;
+  background-image:
+    radial-gradient(
+      120% 50% at 50% 0%,
+      color-mix(in oklab, var(--primary) 6%, transparent) 0%,
+      transparent 60%
+    ),
+    linear-gradient(
+      180deg,
+      oklch(0.125 0.008 90) 0%,
+      oklch(0.105 0.005 90) 55%,
+      oklch(0.095 0.004 90) 100%
+    );
+}
+
+/* Compact social icon button in the footer */
+@utility social-btn {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in oklab, var(--primary) 18%, var(--border));
+  background-image: linear-gradient(
+    160deg,
+    color-mix(in oklab, var(--primary) 8%, oklch(0.16 0.01 90)) 0%,
+    color-mix(in oklab, var(--primary) 3%, oklch(0.12 0.005 90)) 100%
+  );
+  color: var(--muted-foreground);
+  transition: color 200ms ease, border-color 200ms ease, transform 200ms ease;
+  &:hover {
+    color: var(--primary);
+    border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
+    transform: translateY(-2px);
+  }
+}
+
+/* Homepage ticker overlap bridge */
+@utility ticker-bridge {
+  position: relative;
+  z-index: 20;
+  margin-top: -1.75rem;
+  background-image:
+    linear-gradient(
+      180deg,
+      oklch(0.13 0.008 90) 0%,
+      oklch(0.155 0.01 90) 100%
+    );
+  border-block: 1px solid color-mix(in oklab, var(--primary) 18%, var(--border));
+  box-shadow:
+    0 -12px 40px -20px color-mix(in oklab, var(--primary) 35%, transparent),
+    0 12px 40px -20px color-mix(in oklab, var(--primary) 20%, transparent);
+  @media (min-width: 768px) {
+    margin-top: -2.25rem;
+  }
+}
+
+/* Division card with stronger game identity */
+@utility division-card {
+  position: relative;
+  background-image: linear-gradient(
+    160deg,
+    color-mix(in oklab, var(--primary) 5%, oklch(0.185 0.01 90)) 0%,
+    oklch(0.145 0.008 90) 50%,
+    oklch(0.115 0.006 90) 100%
+  );
+  border: 1px solid color-mix(in oklab, var(--primary) 14%, var(--border));
+  border-radius: var(--radius-xl);
+  transition: transform 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
+  &:hover {
+    transform: translateY(-5px);
+    border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
+    box-shadow:
+      0 14px 34px -22px color-mix(in oklab, var(--primary) 45%, transparent),
+      0 0 0 1px color-mix(in oklab, var(--primary) 20%, transparent);
+  }
+}
+
+/* Invitation card (Discord / CTA) in divisions grid */
+@utility division-cta-card {
+  position: relative;
+  background-image: linear-gradient(
+    140deg,
+    color-mix(in oklab, var(--primary) 22%, oklch(0.2 0.01 90)) 0%,
+    color-mix(in oklab, var(--primary) 10%, oklch(0.15 0.008 90)) 50%,
+    oklch(0.12 0.006 90) 100%
+  );
+  border: 1px solid color-mix(in oklab, var(--primary) 35%, var(--border));
+  border-radius: var(--radius-xl);
+  transition: transform 300ms ease, border-color 300ms ease, box-shadow 300ms ease;
+  &:hover {
+    transform: translateY(-5px);
+    border-color: color-mix(in oklab, var(--primary) 60%, var(--border));
+    box-shadow:
+      0 16px 40px -20px color-mix(in oklab, var(--primary) 55%, transparent),
+      0 0 0 1px color-mix(in oklab, var(--primary) 30%, transparent);
+  }
+}
+
+/* Header: barely-there vertical shift so the bar isn't a flat black block */
+@utility header-gradient {
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklab, oklch(0.095 0 0) 92%, transparent) 0%,
+    color-mix(in oklab, oklch(0.14 0 0) 92%, transparent) 100%
+  );
+}
+
+@utility surface-card {
+  background-image: linear-gradient(
+    155deg,
+    color-mix(in oklab, var(--primary) 6%, oklch(0.19 0.01 90)) 0%,
+    oklch(0.155 0.008 90) 55%,
+    oklch(0.125 0.006 90) 100%
+  );
+  border: 1px solid color-mix(in oklab, var(--primary) 16%, var(--border));
+  border-radius: var(--radius-xl);
+}
+
+@utility glass-card {
+  background-image: linear-gradient(
+    155deg,
+    color-mix(in oklab, var(--primary) 8%, transparent) 0%,
+    color-mix(in oklab, var(--surface) 62%, transparent) 55%,
+    color-mix(in oklab, oklch(0.12 0.01 96) 55%, transparent) 100%
+  );
+  border: 1px solid color-mix(in oklab, var(--primary) 18%, var(--border));
+  backdrop-filter: blur(18px) saturate(125%);
+}
+
+/* Warm section band: gold-washed gradient + the same pinstripe weave */
+@utility warm-band {
+  position: relative;
+  background-image:
+    repeating-linear-gradient(
+      135deg,
+      oklch(0.98 0.005 100 / 0.016) 0 1px,
+      transparent 1px 14px
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--primary) 5%, oklch(0.13 0.008 90)) 0%,
+      oklch(0.145 0.01 90) 60%,
+      oklch(0.115 0.006 90) 100%
+    );
+}
+
+/* Same warm depth, no stripe texture: heroes, footer, solid panel sections */
+@utility warm-band-plain {
+  position: relative;
+  background-image:
+    radial-gradient(
+      110% 70% at 50% 0%,
+      color-mix(in oklab, var(--primary) 9%, transparent) 0%,
+      transparent 62%
+    ),
+    linear-gradient(
+      180deg,
+      oklch(0.145 0.012 90) 0%,
+      oklch(0.125 0.008 90) 55%,
+      oklch(0.105 0.005 90) 100%
+    );
+}
+
+/* Deep gradient panel: gradient interior, no texture bleeding through */
+@utility panel-gradient {
+  position: relative;
+  background-image: linear-gradient(
+    160deg,
+    color-mix(in oklab, var(--primary) 7%, oklch(0.185 0.01 90)) 0%,
+    oklch(0.15 0.008 90) 52%,
+    oklch(0.115 0.006 90) 100%
+  );
+  border: 1px solid color-mix(in oklab, var(--primary) 14%, var(--border));
+  border-radius: var(--radius-xl);
+}
+
+/* Admin workspace: dense, tactile operations surfaces without the public-site chrome. */
+@utility admin-shell {
+  background:
+    linear-gradient(color-mix(in oklab, var(--primary) 2.5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--primary) 2.5%, transparent) 1px, transparent 1px),
+    var(--background);
+  background-size: 2.25rem 2.25rem;
+}
+
+@utility admin-sidebar {
+  background: color-mix(in oklab, var(--background) 94%, var(--primary));
+  box-shadow: 1.25rem 0 4rem -3.5rem color-mix(in oklab, var(--primary) 42%, transparent);
+}
+
+@utility admin-topbar {
+  background: color-mix(in oklab, var(--background) 86%, transparent);
+}
+
+@utility admin-mobile-nav {
+  background: color-mix(in oklab, var(--background) 91%, transparent);
+  box-shadow: 0 -1rem 3rem -2rem color-mix(in oklab, var(--primary) 45%, transparent);
+}
+
+@utility admin-more-sheet {
+  background:
+    linear-gradient(155deg, color-mix(in oklab, var(--primary) 6%, transparent), transparent 42%),
+    var(--background);
+}
+
+@utility admin-panel {
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1.5rem 4rem -3rem oklch(0 0 0 / 0.9);
+}
+
+@utility admin-metric {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 1.25rem 3rem -2.75rem color-mix(in oklab, var(--primary) 36%, transparent);
+  &::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary), transparent 72%);
+    opacity: 0.45;
+  }
+}
+
+/* Gold gradient text for headlines and price figures */
+@utility gradient-text {
+  background-image: linear-gradient(
+    100deg,
+    var(--primary) 0%,
+    var(--gold-bright) 45%,
+    color-mix(in oklab, var(--primary) 85%, oklch(0.6 0.12 70)) 100%
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Gradient gold fill for primary buttons and pills */
+@utility gold-gradient {
+  background-image: linear-gradient(
+    100deg,
+    color-mix(in oklab, var(--primary) 88%, oklch(0.55 0.14 70)) 0%,
+    var(--primary) 48%,
+    var(--gold-bright) 100%
+  );
+  color: var(--primary-foreground);
+}
+
+/* Raised, glowing pricing card (middle tier) */
+@utility card-featured {
+  border-color: color-mix(in oklab, var(--primary) 60%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) 35%, transparent),
+    0 0 34px -8px color-mix(in oklab, var(--primary) 40%, transparent),
+    0 0 90px -18px color-mix(in oklab, var(--primary) 26%, transparent);
+}
+
+/* Signed-in member's own tier: pulsing gold glow */
+@utility membership-active {
+  border-color: color-mix(in oklab, var(--primary) 85%, transparent);
+  animation: membership-pulse 3.2s ease-in-out infinite;
+}
+
+@keyframes membership-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) 55%, transparent),
+      0 0 30px -10px color-mix(in oklab, var(--primary) 45%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--primary) 80%, transparent),
+      0 0 60px -6px color-mix(in oklab, var(--primary) 60%, transparent);
+  }
+}
+
+/* Soft gold light spilling over the top edge of a section */
+@utility glow-top {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    inset-inline: 8%;
+    top: -6rem;
+    height: 12rem;
+    pointer-events: none;
+    background: radial-gradient(
+      55% 50% at 50% 100%,
+      color-mix(in oklab, var(--primary) 26%, transparent) 0%,
+      transparent 72%
+    );
+    filter: blur(28px);
+  }
+}
+
+/* Thin fading gold rule, replaces hard grey dividers */
+@utility hairline-gold {
+  height: 1px;
+  border: 0;
+  background-image: linear-gradient(
+    to right,
+    transparent 0%,
+    color-mix(in oklab, var(--primary) 45%, transparent) 22%,
+    color-mix(in oklab, var(--primary) 55%, transparent) 50%,
+    color-mix(in oklab, var(--primary) 45%, transparent) 78%,
+    transparent 100%
+  );
+}
+
+/* Small gold-tinted tile that holds a section or card icon */
+@utility icon-tile {
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in oklab, var(--primary) 28%, transparent);
+  background-image: linear-gradient(
+    150deg,
+    color-mix(in oklab, var(--primary) 22%, transparent) 0%,
+    color-mix(in oklab, var(--primary) 6%, transparent) 100%
+  );
+  color: var(--primary);
+}
+
+/* Interactive feedback: subtle lift + gold glow on hover/focus */
+@utility hover-glow {
+  transition: transform 300ms ease, box-shadow 300ms ease, border-color 300ms ease;
+  &:hover,
+  &:focus-within {
+    transform: translateY(-4px);
+    border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
+    box-shadow: 0 10px 26px -18px color-mix(in oklab, var(--primary) 55%, transparent),
+      0 0 0 1px color-mix(in oklab, var(--primary) 22%, transparent);
+  }
+}
+
+/* Slow hero movement adds depth without distracting from readable content. */
+@utility hero-media-drift {
+  animation: hero-media-drift 7s ease-in-out infinite;
+}
+
+@utility hero-video-drift {
+  animation: hero-video-drift 18s ease-in-out infinite alternate;
+}
+
+/* Consistent tactile motion for cards that do not define their own hover state. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .surface-card:not(.hover-glow),
+  .panel-gradient:not(.hover-glow),
+  .glass-card:not(.hover-glow) {
+    transition: transform 320ms cubic-bezier(0.22, 0.61, 0.36, 1), border-color 320ms ease,
+      box-shadow 320ms ease;
+  }
+
+  .surface-card:not(.hover-glow):hover,
+  .panel-gradient:not(.hover-glow):hover,
+  .glass-card:not(.hover-glow):hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in oklab, var(--primary) 34%, var(--border));
+    box-shadow: 0 18px 42px -30px color-mix(in oklab, var(--primary) 50%, transparent);
+  }
+}
+
+@utility angled-band {
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 2rem), 0 100%);
+}
+
+/* Scroll reveal: starts lowered + transparent, settles when in view */
+@utility reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 700ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 700ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+@utility reveal-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Soft bottom fade so hero PNGs melt into the next section */
+@utility image-fade-bottom {
+  mask-image: linear-gradient(to bottom, black 62%, color-mix(in srgb, black 45%, transparent) 84%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 62%, color-mix(in srgb, black 45%, transparent) 84%, transparent 100%);
+}
+
+/* Gradient edge between a hero and the section that follows it */
+@utility hero-hem {
+  background-image: linear-gradient(to top, var(--color-background) 12%, transparent 100%);
+}
+
+/* ---------- Mobile navigation panel ---------- */
+@keyframes menu-item-in {
+  from {
+    opacity: 0;
+    transform: translateX(22px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility menu-panel {
+  background-image:
+    radial-gradient(
+      120% 65% at 100% 0%,
+      color-mix(in oklab, var(--primary) 16%, transparent) 0%,
+      transparent 62%
+    ),
+    linear-gradient(180deg, color-mix(in oklab, var(--background) 96%, var(--primary) 4%), var(--background));
+  backdrop-filter: blur(20px);
+}
+
+@utility menu-item {
+  animation: menu-item-in 460ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+@utility menu-row {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 260ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    background-color 260ms ease,
+    color 200ms ease,
+    border-color 260ms ease;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--primary) 14%, transparent),
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 260ms ease;
+  }
+  &:hover,
+  &:focus-visible {
+    transform: translateX(4px);
+  }
+  &:hover::after,
+  &:focus-visible::after {
+    opacity: 1;
+  }
+}
+
+@utility menu-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--primary) 78%, var(--muted-foreground));
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Team detail command center */
+@utility team-command-page {
+  min-height: 70vh;
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--background) 92%, var(--primary) 8%) 0%,
+    var(--background) 34rem
+  );
+}
+
+@utility team-command-hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid color-mix(in oklab, var(--primary) 24%, transparent);
+  background-color: var(--background);
+}
+
+@utility team-command-grid {
+  background-image:
+    linear-gradient(color-mix(in oklab, var(--primary) 9%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklab, var(--primary) 9%, transparent) 1px, transparent 1px);
+  background-size: 3rem 3rem;
+  mask-image: linear-gradient(to right, transparent, black 45%, black);
+}
+
+@utility team-command-logo {
+  width: 7rem;
+  height: 7rem;
+  flex: none;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--primary) 65%, transparent);
+  background: color-mix(in oklab, var(--surface) 92%, transparent);
+  box-shadow: inset 0 0 0 0.35rem var(--background), 0 0 2rem -1rem color-mix(in oklab, var(--primary) 70%, transparent);
+}
+
+@utility team-command-stat {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto auto;
+  align-items: center;
+  justify-content: center;
+  column-gap: 0.5rem;
+  padding: 1rem 0.5rem;
+  color: var(--muted-foreground);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  & + & {
+    border-left: 1px solid color-mix(in oklab, var(--primary) 18%, transparent);
+  }
+  & > :last-child {
+    grid-column: 1 / -1;
+    text-align: center;
+  }
+}
+
+@utility team-command-panel {
+  border: 1px solid color-mix(in oklab, var(--primary) 16%, var(--border));
+  border-radius: var(--radius-sm);
+  background-image: linear-gradient(
+    145deg,
+    color-mix(in oklab, var(--primary) 5%, var(--surface)) 0%,
+    var(--surface) 55%,
+    color-mix(in oklab, var(--background) 92%, var(--surface)) 100%
+  );
+  box-shadow: var(--shadow-surface);
+}
+
+@utility team-command-heading {
+  display: flex;
+  min-height: 4.5rem;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--primary) 20%, transparent);
+  padding-bottom: 0.8rem;
+}
+
+@utility team-player-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--primary) 18%, var(--border));
+  border-radius: var(--radius-sm);
+  background-color: var(--surface);
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+  &:hover,
+  &:focus-within {
+    transform: translateY(-3px);
+    border-color: color-mix(in oklab, var(--primary) 55%, transparent);
+    box-shadow: 0 1rem 2.5rem -1.5rem color-mix(in oklab, var(--primary) 45%, transparent);
+  }
+}
+
+@utility team-recruit-panel {
+  border: 1px solid color-mix(in oklab, var(--primary) 60%, transparent);
+  border-radius: var(--radius-sm);
+  background-image:
+    linear-gradient(145deg, color-mix(in oklab, var(--primary) 12%, var(--surface)) 0%, var(--background) 72%);
+  box-shadow: 0 0 2.5rem -1.6rem color-mix(in oklab, var(--primary) 65%, transparent);
+}
+
+/* Diagonal cut used at the bottom edge of the hero */
+@utility clip-diagonal-bottom {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 calc(100% - 3.5rem));
+}
+
+@utility eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--primary);
+  &::before {
+    content: "";
+    width: 1.75rem;
+    height: 2px;
+    flex: none;
+    border-radius: 2px;
+    background-color: var(--primary);
+  }
+  &.text-center {
+    justify-content: center;
+  }
+}
+
+/* Horizontal swipe rail on small screens, grid on larger ones */
+@utility swipe-rail {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  /* Match the rail's inline padding so the first card keeps its left gap
+     instead of being snapped flush against the screen edge. */
+  scroll-padding-inline: 2.5rem;
+  /* Vertical padding (+ matching negative margin) keeps card glow shadows
+     from being clipped by the horizontal scroll area. */
+  padding-block: 1.25rem;
+  margin-block: -1.25rem;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+@utility swipe-item {
+  flex: 0 0 82%;
+  scroll-snap-align: start;
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Preserve scrolling while keeping compact rails and panels visually clean. */
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Soft edges for looping marquees so items fade instead of hard-clipping */
+@utility marquee-fade {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 6rem,
+    black calc(100% - 6rem),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 6rem,
+    black calc(100% - 6rem),
+    transparent 100%
+  );
+}
+
+/* Gold gradient pill used for role names and small labels */
+@utility gradient-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 999px;
+  padding: 0.3rem 0.85rem;
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: oklch(0.16 0.01 90);
+  background-image: linear-gradient(
+    100deg,
+    color-mix(in oklab, var(--primary) 88%, oklch(0.6 0.12 70)) 0%,
+    var(--primary) 45%,
+    var(--gold-bright) 100%
+  );
+  box-shadow: 0 6px 18px -10px color-mix(in oklab, var(--primary) 60%, transparent);
+}
+
+/* Editorial offer card: image with warm scrim and hover lift */
+@utility offer-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in oklab, var(--primary) 14%, var(--border));
+  background-image: linear-gradient(
+    170deg,
+    oklch(0.165 0.012 90) 0%,
+    oklch(0.115 0.006 90) 100%
+  );
+  transition: transform 400ms ease, border-color 400ms ease, box-shadow 400ms ease;
+  &:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in oklab, var(--primary) 40%, var(--border));
+    box-shadow: 0 26px 60px -34px color-mix(in oklab, var(--primary) 45%, transparent);
+  }
+}
+
+/* ---------- Article bodies written in the admin panel ---------- */
+.rich-text {
+  color: var(--foreground);
+  font-size: 1.0625rem;
+  line-height: 1.85;
+}
+.rich-text > * + * {
+  margin-top: 1.5rem;
+}
+.rich-text h2,
+.rich-text h3 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+  margin-top: 3rem;
+  margin-bottom: 1rem;
+}
+.rich-text h2 {
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+}
+.rich-text h3 {
+  font-size: clamp(1.35rem, 3vw, 1.65rem);
+}
+.rich-text a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.rich-text ul,
+.rich-text ol {
+  padding-left: 1.35rem;
+}
+.rich-text ul {
+  list-style: disc;
+}
+.rich-text ol {
+  list-style: decimal;
+}
+.rich-text li + li {
+  margin-top: 0.4rem;
+}
+.rich-text blockquote {
+  border-left: 4px solid var(--primary);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  padding: 1.25rem 1.5rem;
+  background: color-mix(in oklab, var(--primary) 8%, var(--surface));
+  color: var(--foreground);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-style: normal;
+  line-height: 1.45;
+  text-transform: uppercase;
+}
+.rich-text img {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  width: 100%;
+  height: auto;
+  margin-top: 1.6rem;
+  margin-bottom: 1.6rem;
+}
+.rich-text hr {
+  border-color: var(--border);
+  margin: 2rem 0;
+}
+.rich-text a.rich-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  border-radius: var(--radius-lg);
+  background-image: linear-gradient(100deg, var(--primary) 0%, var(--gold-bright) 100%);
+  color: oklch(0.16 0.01 90);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+}

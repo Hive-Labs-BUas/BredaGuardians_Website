@@ -1,0 +1,1 @@
+ALTER TABLE public.research ADD COLUMN IF NOT EXISTS takeaways text NOT NULL DEFAULT '';

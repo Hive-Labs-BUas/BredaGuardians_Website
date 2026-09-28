@@ -1,0 +1,154 @@
+# The only compose file, run as the single project "web", so every container
+# is named web-*. Both environments live here as separate services, each with
+# its own tunnel and therefore its own public URL.
+#
+#   web-website-prod-1   web-tunnel-prod-1    <- main branch, host port 3000
+#   web-website-dev-1    web-tunnel-dev-1     <- dev branch,  host port 3001
+#
+# Profiles keep a deploy to its own side: a dev push touches only the dev
+# services and leaves production running.
+#
+#   docker compose --profile prod up -d
+#   docker compose --profile dev  up -d
+#
+# The app is server-rendered (Nitro node-server), so each website service is a
+# Node process listening on 4000 inside the container - not a static file server.
+#
+# Public values arrive as build args; secrets arrive as runtime environment, and
+# must never be build args because those are recoverable from image history.
+services:
+  website-prod:
+    profiles: [prod]
+    image: bg-website:prod-${PROD_SHA:-local}
+    build:
+      context: .
+      dockerfile: dockerfile
+      args:
+        VITE_SUPABASE_URL: ${PROD_SUPABASE_URL:?}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${PROD_SUPABASE_PUBLISHABLE_KEY:?}
+        VITE_PAYMENTS_CLIENT_TOKEN: ${PROD_PAYMENTS_CLIENT_TOKEN:-}
+        GIT_SHA: ${PROD_SHA:-local}
+        GIT_REF: ${PROD_REF:-unknown}
+        BUILD_TIME: ${PROD_BUILT:-unknown}
+    ports:
+      - "3000:4000"      # production, reachable on the VLAN
+    environment:
+      PORT: 4000
+      SUPABASE_URL: ${PROD_SUPABASE_URL:?}
+      SUPABASE_PUBLISHABLE_KEY: ${PROD_SUPABASE_PUBLISHABLE_KEY:?}
+      SUPABASE_SERVICE_ROLE_KEY: ${PROD_SUPABASE_SERVICE_ROLE_KEY:?}
+      RESEND_API_KEY: ${PROD_RESEND_API_KEY:-}
+    restart: unless-stopped
+    user: "1000:1000"
+    # remove read_only and the tmpfs below if the server fails to start; SSR
+    # frameworks occasionally want a writable path outside /tmp
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cpus: 1.5
+    mem_limit: 768m
+    pids_limit: 256
+    healthcheck:
+      # any HTTP response means the process is serving; a 500 from a failed
+      # render should not stop the tunnel from starting
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/').then(()=>process.exit(0)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks: [prod]
+
+  tunnel-prod:
+    profiles: [prod]
+    image: cloudflare/cloudflared:2025.8.1
+    restart: unless-stopped
+    user: "65532:65532"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${PROD_TUNNEL_TOKEN:?}
+    tmpfs:
+      - /tmp:size=8m
+    mem_limit: 128m
+    pids_limit: 64
+    depends_on:
+      website-prod:
+        condition: service_healthy
+    networks: [prod]
+
+  website-dev:
+    profiles: [dev]
+    image: bg-website:dev-${DEV_SHA:-local}
+    build:
+      context: .
+      dockerfile: dockerfile
+      args:
+        VITE_SUPABASE_URL: ${DEV_SUPABASE_URL:?}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${DEV_SUPABASE_PUBLISHABLE_KEY:?}
+        VITE_PAYMENTS_CLIENT_TOKEN: ${DEV_PAYMENTS_CLIENT_TOKEN:-}
+        GIT_SHA: ${DEV_SHA:-local}
+        GIT_REF: ${DEV_REF:-unknown}
+        BUILD_TIME: ${DEV_BUILT:-unknown}
+    ports:
+      - "3001:4000"      # development, reachable on the VLAN
+    environment:
+      PORT: 4000
+      SUPABASE_URL: ${DEV_SUPABASE_URL:?}
+      SUPABASE_PUBLISHABLE_KEY: ${DEV_SUPABASE_PUBLISHABLE_KEY:?}
+      SUPABASE_SERVICE_ROLE_KEY: ${DEV_SUPABASE_SERVICE_ROLE_KEY:?}
+      RESEND_API_KEY: ${DEV_RESEND_API_KEY:-}
+    restart: unless-stopped
+    user: "1000:1000"
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cpus: 1.0
+    mem_limit: 512m
+    pids_limit: 256
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/').then(()=>process.exit(0)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks: [dev]
+
+  tunnel-dev:
+    profiles: [dev]
+    image: cloudflare/cloudflared:2025.8.1
+    restart: unless-stopped
+    user: "65532:65532"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${DEV_TUNNEL_TOKEN:?}
+    tmpfs:
+      - /tmp:size=8m
+    mem_limit: 128m
+    pids_limit: 64
+    depends_on:
+      website-dev:
+        condition: service_healthy
+    networks: [dev]
+
+# separate networks: the two environments cannot reach each other, and both
+# tunnels resolve their own website service without a name collision
+networks:
+  prod:
+  dev:

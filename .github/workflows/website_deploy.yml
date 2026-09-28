@@ -11,11 +11,25 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, svc-web]
+    runs-on: [self-hosted, linux, web]
     # the gate that decides which branch may read which environment's secrets
     environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
     steps:
       - uses: actions/checkout@v4
+
+      # a hardcoded key in the checkout would be baked into the image and
+      # published; fail the deploy rather than ship it
+      - name: Refuse to deploy hardcoded credentials
+        run: |
+          if grep -rInE \
+               'sb_(publishable|secret)_[A-Za-z0-9_-]{20,}|sk_(live|test)_[A-Za-z0-9]{20,}|re_[A-Za-z0-9]{24,}|eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{20,}' \
+               --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.output \
+               --exclude='*.lock' --exclude='package-lock.json' --exclude='.env.example' \
+               . ; then
+            echo "::error::a credential-shaped string is committed — move it to GitHub secrets"
+            exit 1
+          fi
+          echo "no hardcoded credentials found"
 
       - name: Resolve the environment from the branch
         id: m
@@ -26,36 +40,44 @@ jobs:
             *)    echo "::error::no environment mapped for $GITHUB_REF_NAME"
                   exit 1 ;;
           esac
-          {
-            echo "profile=$profile"
-            echo "port=$port"
-          } >> "$GITHUB_OUTPUT"
-          echo "$GITHUB_REF_NAME -> profile $profile on 127.0.0.1:$port" >> "$GITHUB_STEP_SUMMARY"
+          { echo "profile=$profile"; echo "port=$port"; } >> "$GITHUB_OUTPUT"
+          echo "$GITHUB_REF_NAME -> profile $profile on port $port" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Build and deploy
-        working-directory: dummy-site
         env:
           COMPOSE_PROJECT_NAME: web
           PROFILE: ${{ steps.m.outputs.profile }}
           SHA: ${{ github.sha }}
           REF: ${{ github.ref_name }}
-          TOKEN: ${{ secrets.TUNNEL_TOKEN }}
+          # public: inlined into the client bundle by Vite
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+          PAYMENTS_CLIENT_TOKEN: ${{ vars.PAYMENTS_CLIENT_TOKEN }}
+          # secret: runtime only, never a build arg
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          TUNNEL_TOKEN: ${{ secrets.TUNNEL_TOKEN }}
         run: |
           case "$PROFILE" in prod|dev) ;; *) echo "refusing '$PROFILE'"; exit 1 ;; esac
-          test -n "$TOKEN" || { echo "TUNNEL_TOKEN missing for this environment"; exit 1; }
+
+          for v in SUPABASE_URL SUPABASE_PUBLISHABLE_KEY SUPABASE_SERVICE_ROLE_KEY TUNNEL_TOKEN; do
+            eval "val=\${$v}"
+            test -n "$val" || { echo "::error::$v is not set for this environment"; exit 1; }
+          done
 
           BUILT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
-          # only this environment's variables are set, so only its services move
-          if [ "$PROFILE" = prod ]; then
-            export PROD_SHA="$SHA" PROD_REF="$REF" PROD_BUILT="$BUILT" \
-                   PROD_TUNNEL_TOKEN="$TOKEN"
-          else
-            export DEV_SHA="$SHA" DEV_REF="$REF" DEV_BUILT="$BUILT" \
-                   DEV_TUNNEL_TOKEN="$TOKEN"
-          fi
+          # prefix every value for this environment only, so the other profile's
+          # required variables stay unset and its services are untouched
+          if [ "$PROFILE" = prod ]; then P=PROD; else P=DEV; fi
+          export ${P}_SHA="$SHA" ${P}_REF="$REF" ${P}_BUILT="$BUILT" \
+                 ${P}_SUPABASE_URL="$SUPABASE_URL" \
+                 ${P}_SUPABASE_PUBLISHABLE_KEY="$SUPABASE_PUBLISHABLE_KEY" \
+                 ${P}_PAYMENTS_CLIENT_TOKEN="$PAYMENTS_CLIENT_TOKEN" \
+                 ${P}_SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY" \
+                 ${P}_RESEND_API_KEY="$RESEND_API_KEY" \
+                 ${P}_TUNNEL_TOKEN="$TUNNEL_TOKEN"
 
-          # --pull keeps the node and nginx base images current
           docker compose --profile "$PROFILE" build --pull
           # no --remove-orphans: it would tear down the other environment
           docker compose --profile "$PROFILE" up -d
@@ -65,18 +87,23 @@ jobs:
         env:
           PORT: ${{ steps.m.outputs.port }}
         run: |
-          for i in $(seq 1 15); do
-            if curl -fsS "http://127.0.0.1:$PORT/healthz" >/dev/null; then
-              echo "healthy"
-              curl -s "http://127.0.0.1:$PORT/build.json"; echo
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
+                     "http://127.0.0.1:$PORT/" || echo 000)
+            if [ "$code" != "000" ]; then
+              echo "responded with $code"
+              curl -s --max-time 5 "http://127.0.0.1:$PORT/build.json" || true
+              echo
+              # a 5xx means the server is up but rendering is broken
+              [ "$code" -lt 500 ] || { echo "::error::server returned $code"; break; }
               exit 0
             fi
             sleep 2
           done
-          echo "::error::did not become healthy on 127.0.0.1:$PORT"
-          docker compose -p web logs --tail=50
+          echo "::error::not serving on port $PORT"
+          docker compose -p web logs --tail=60
           exit 1
 
-      - name: Prune images this build replaced
+      - name: Prune replaced images
         if: always()
         run: docker image prune -f --filter "until=168h"

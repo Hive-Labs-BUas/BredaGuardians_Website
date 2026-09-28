@@ -1,0 +1,20 @@
+DELETE FROM public.faqs;
+INSERT INTO public.faqs (category, question, answer, sort_order) VALUES
+('Getting Started','How do I join Breda Guardians?','The easiest way is to join our Discord server — that''s where all our community activity, announcements, and sign-ups happen. From there you can get involved as much as you''d like, whether that''s casually hanging out, competing, or applying for a role.',1),
+('Getting Started','Do I need to be a BUas student to join?','No — while Breda Guardians is based at Breda University of Applied Sciences, our Discord community and events are open to anyone interested in competitive gaming in the Breda area.',2),
+('Getting Started','Is it free to join the community?','Yes, joining the Discord server and being part of the community is free. Membership is a separate, optional tier for people who want extra perks (see the Membership section below).',3),
+('Membership','What does membership include?','Membership unlocks extra perks on top of free community access — see our Membership page for the full breakdown of what each tier includes.',4),
+('Membership','How do I purchase membership?','Log in with your Discord account on the Membership page, then choose a tier and complete your purchase. Your account will reflect your active membership immediately afterward.',5),
+('Membership','Can I cancel my membership?','Yes, membership can be cancelled at any time from your account page. Contact us if you need help with this.',6),
+('Tryouts & Competing','How do tryouts work?','Tryouts for our competitive rosters are organized through our Discord server. Keep an eye on announcements there for open tryout windows and how to sign up.',7),
+('Tryouts & Competing','What games does Breda Guardians compete in?','Our community is active in games including League of Legends and Counter-Strike, among others played at The Hive and within our Discord community. Check our Discord server or Hall of Fame page for the most current list of active competitive rosters.',8),
+('Tryouts & Competing','Do I need to be an advanced player to try out?','Not necessarily — tryout requirements vary by roster and game. Everyone is welcome to apply; the tryout process itself will determine the right fit.',9),
+('The Hive','What is The Hive?','The Hive is our physical gaming space at BUas, equipped with gaming PCs and consoles available for members and the community to use.',10),
+('The Hive','What are The Hive''s opening hours?','See our Opening Hours page for the current weekly schedule, plus any special closures or events.',11),
+('The Hive','Do I need to book a PC in advance?','Booking always goes through Hive staff (our interns) — reach out to them directly (in person at The Hive or via Discord) to arrange a PC session.',12),
+('Community & Discord','What happens on the Discord server?','Our Discord is the hub for everything — announcements, community chat, tryout sign-ups, events, and more. It''s the best place to stay connected with what''s going on.',13),
+('Community & Discord','Are there rules for the community?','Yes, our Discord server has community guidelines to keep things welcoming and fair for everyone. These are posted in the server itself.',14),
+('Community & Discord','How can I get involved beyond just being a member?','We''re always looking for people to join as interns in various roles — check our Interns page for current open positions.',15),
+('General','How can I contact Breda Guardians directly?','Use the Contact page for general inquiries, or reach out through our Discord server for anything community-related.',16),
+('General','Where can I find Breda Guardians on social media?','Links to our socials are in the footer of every page.',17),
+('General','I have a question that isn''t answered here — what do I do?','Reach out via the Contact page or ask in our Discord server — someone will be happy to help.',18);
