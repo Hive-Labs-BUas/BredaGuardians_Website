@@ -68,7 +68,7 @@ jobs:
 
   deploy:
     needs: [meta, build]
-    runs-on: [self-hosted, linux, web]
+    runs-on: [self-hosted, svc-web]
     # the gate that decides which branch may read which environment's secrets
     environment: ${{ needs.meta.outputs.env }}
     steps:
