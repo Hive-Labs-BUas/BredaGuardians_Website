@@ -64,7 +64,7 @@ services:
 
   tunnel-prod:
     profiles: [prod]
-    image: cloudflare/cloudflared:2025.8.1
+    image: cloudflare/cloudflared:2026.9.1
     restart: unless-stopped
     user: "65532:65532"
     read_only: true
@@ -127,7 +127,7 @@ services:
 
   tunnel-dev:
     profiles: [dev]
-    image: cloudflare/cloudflared:2025.8.1
+    image: cloudflare/cloudflared:2026.9.1
     restart: unless-stopped
     user: "65532:65532"
     read_only: true
