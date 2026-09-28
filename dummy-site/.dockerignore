@@ -1,0 +1,12 @@
+# keep the build context small and free of anything local
+node_modules
+dist
+.env
+.env.*
+*.log
+.git
+.github
+Dockerfile
+dockerfile
+docker-compose.yml
+.dockerignore

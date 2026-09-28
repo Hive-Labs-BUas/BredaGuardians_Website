@@ -1,25 +1,70 @@
+# The only compose file, run as the single project "web", so every container
+# is named web-*. Both environments live here as separate services, each with
+# its own tunnel and therefore its own public URL.
+#
+#   web-website-prod-1   web-tunnel-prod-1    <- main branch
+#   web-website-dev-1    web-tunnel-dev-1     <- dev branch
+#
+# Profiles keep a deploy to its own side: a dev push touches only the dev
+# services and leaves production running untouched.
+#
+#   docker compose --profile prod up -d
+#   docker compose --profile dev  up -d
+#
+# Values come from the GitHub environment the branch selects, so no token is
+# ever stored on the host.
 services:
-  website:
-    image: bg_website:latest
-    container_name: bg_website
-    # ports is only here for local testing, in production we will use cloudflare tunnel
-    ports:
-      - "8080:969"
+  website-prod:
+    profiles: [prod]
+    image: ghcr.io/playsmart-buas/bredaguardians_website:${PROD_TAG:-main}
     restart: unless-stopped
-    networks:
-      - webnet
+    user: "101:101"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:size=16m
+      - /var/cache/nginx:size=32m
+    cpus: 1.0
+    mem_limit: 256m
+    pids_limit: 128
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks: [prod]
 
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    container_name: cloudflared-tunnel
+
+  website-dev:
+    profiles: [dev]
+    image: ghcr.io/playsmart-buas/bredaguardians_website:${DEV_TAG:-dev}
     restart: unless-stopped
-    command: tunnel run
-    environment:
-      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
-    networks:
-      - webnet
-    depends_on:
-      - website
+    user: "101:101"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:size=16m
+      - /var/cache/nginx:size=32m
+    cpus: 0.5
+    mem_limit: 192m
+    pids_limit: 128
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8080/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks: [dev]
 
+# separate networks: the two environments cannot reach each other, and both
+# tunnels resolve their own website service without a name collision
 networks:
-  webnet:
+  prod:
+  dev:
