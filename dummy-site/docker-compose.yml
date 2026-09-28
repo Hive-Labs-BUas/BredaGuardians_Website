@@ -11,12 +11,27 @@
 #   docker compose --profile prod up -d
 #   docker compose --profile dev  up -d
 #
-# Values come from the GitHub environment the branch selects, so no token is
-# ever stored on the host.
+# Images are built here on the host from the checkout, so there is no registry
+# to authenticate to. Only the tunnel token comes from the GitHub environment;
+# nothing secret is stored on the host.
+#
+# Each side also publishes on loopback for local checks:
+#   prod -> http://127.0.0.1:3000    dev -> http://127.0.0.1:3001
+# Loopback deliberately: Docker's iptables rules bypass ufw, so 0.0.0.0 would
+# expose the site to the rest of the VLAN despite the firewall.
 services:
   website-prod:
     profiles: [prod]
-    image: ghcr.io/playsmart-buas/bredaguardians_website:${PROD_TAG:-main}
+    image: bg-website:prod-${PROD_SHA:-local}
+    build:
+      context: .
+      dockerfile: dockerfile
+      args:
+        GIT_SHA: ${PROD_SHA:-local}
+        GIT_REF: ${PROD_REF:-unknown}
+        BUILD_TIME: ${PROD_BUILT:-unknown}
+    ports:
+      - "127.0.0.1:3000:8080"
     restart: unless-stopped
     user: "101:101"
     read_only: true
@@ -41,7 +56,16 @@ services:
 
   website-dev:
     profiles: [dev]
-    image: ghcr.io/playsmart-buas/bredaguardians_website:${DEV_TAG:-dev}
+    image: bg-website:dev-${DEV_SHA:-local}
+    build:
+      context: .
+      dockerfile: dockerfile
+      args:
+        GIT_SHA: ${DEV_SHA:-local}
+        GIT_REF: ${DEV_REF:-unknown}
+        BUILD_TIME: ${DEV_BUILT:-unknown}
+    ports:
+      - "127.0.0.1:3001:8080"
     restart: unless-stopped
     user: "101:101"
     read_only: true
