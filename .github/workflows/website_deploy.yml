@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, linux, web]
+    runs-on: [self-hosted, Linux, svc-web]
     # the gate that decides which branch may read which environment's secrets
     environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
     steps:
