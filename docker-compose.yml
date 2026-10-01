@@ -24,8 +24,8 @@ services:
       context: .
       dockerfile: dockerfile
       args:
-        VITE_SUPABASE_URL: ${PROD_SUPABASE_URL:-}
-        VITE_SUPABASE_PUBLISHABLE_KEY: ${PROD_SUPABASE_PUBLISHABLE_KEY:-}
+        VITE_SUPABASE_URL: ${PROD_SUPABASE_URL:?}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${PROD_SUPABASE_PUBLISHABLE_KEY:?}
         VITE_PAYMENTS_CLIENT_TOKEN: ${PROD_PAYMENTS_CLIENT_TOKEN:-}
         GIT_SHA: ${PROD_SHA:-local}
         GIT_REF: ${PROD_REF:-unknown}
@@ -34,24 +34,32 @@ services:
       - "3000:4000"      # production, reachable on the VLAN
     environment:
       PORT: 4000
-      SUPABASE_URL: ${PROD_SUPABASE_URL:-}
-      SUPABASE_PUBLISHABLE_KEY: ${PROD_SUPABASE_PUBLISHABLE_KEY:-}
-      SUPABASE_SERVICE_ROLE_KEY: ${PROD_SUPABASE_SERVICE_ROLE_KEY:-}
+      SUPABASE_URL: ${PROD_SUPABASE_URL:?}
+      SUPABASE_PUBLISHABLE_KEY: ${PROD_SUPABASE_PUBLISHABLE_KEY:?}
+      # required on production: most of the app depends on it
+      SUPABASE_SERVICE_ROLE_KEY: ${PROD_SUPABASE_SERVICE_ROLE_KEY:?}
       RESEND_API_KEY: ${PROD_RESEND_API_KEY:-}
     restart: unless-stopped
+    init: true
     user: "1000:1000"
     # remove read_only and the tmpfs below if the server fails to start; SSR
     # frameworks occasionally want a writable path outside /tmp
     read_only: true
     tmpfs:
-      - /tmp:size=64m
+      # writable but not executable: nothing dropped here can be run
+      - /tmp:size=64m,mode=1777,noexec,nosuid,nodev
     security_opt:
       - no-new-privileges:true
+      - seccomp=builtin          # never unconfined
+      - apparmor=docker-default
     cap_drop:
       - ALL
     cpus: 1.5
     mem_limit: 768m
     pids_limit: 256
+    ulimits:
+      nofile: { soft: 1024, hard: 2048 }
+      nproc: 256
     healthcheck:
       # any HTTP response means the process is serving; a 500 from a failed
       # render should not stop the tunnel from starting
@@ -66,19 +74,24 @@ services:
     profiles: [prod]
     image: cloudflare/cloudflared:2026.9.1
     restart: unless-stopped
+    init: true
     user: "65532:65532"
     read_only: true
     security_opt:
       - no-new-privileges:true
+      - seccomp=builtin          # never unconfined
+      - apparmor=docker-default
     cap_drop:
       - ALL
     command: ["tunnel", "--no-autoupdate", "run"]
     environment:
-      TUNNEL_TOKEN: ${PROD_TUNNEL_TOKEN:-}
+      TUNNEL_TOKEN: ${PROD_TUNNEL_TOKEN:?}
     tmpfs:
-      - /tmp:size=8m
+      - /tmp:size=8m,mode=1777,noexec,nosuid,nodev
     mem_limit: 128m
     pids_limit: 64
+    ulimits:
+      nofile: { soft: 512, hard: 1024 }
     depends_on:
       website-prod:
         condition: service_healthy
@@ -91,8 +104,8 @@ services:
       context: .
       dockerfile: dockerfile
       args:
-        VITE_SUPABASE_URL: ${DEV_SUPABASE_URL:-}
-        VITE_SUPABASE_PUBLISHABLE_KEY: ${DEV_SUPABASE_PUBLISHABLE_KEY:-}
+        VITE_SUPABASE_URL: ${DEV_SUPABASE_URL:?}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${DEV_SUPABASE_PUBLISHABLE_KEY:?}
         VITE_PAYMENTS_CLIENT_TOKEN: ${DEV_PAYMENTS_CLIENT_TOKEN:-}
         GIT_SHA: ${DEV_SHA:-local}
         GIT_REF: ${DEV_REF:-unknown}
@@ -101,22 +114,30 @@ services:
       - "3001:4000"      # development, reachable on the VLAN
     environment:
       PORT: 4000
-      SUPABASE_URL: ${DEV_SUPABASE_URL:-}
-      SUPABASE_PUBLISHABLE_KEY: ${DEV_SUPABASE_PUBLISHABLE_KEY:-}
+      SUPABASE_URL: ${DEV_SUPABASE_URL:?}
+      SUPABASE_PUBLISHABLE_KEY: ${DEV_SUPABASE_PUBLISHABLE_KEY:?}
+      # optional on dev: the app reports the missing key per feature
       SUPABASE_SERVICE_ROLE_KEY: ${DEV_SUPABASE_SERVICE_ROLE_KEY:-}
       RESEND_API_KEY: ${DEV_RESEND_API_KEY:-}
     restart: unless-stopped
+    init: true
     user: "1000:1000"
     read_only: true
     tmpfs:
-      - /tmp:size=64m
+      # writable but not executable: nothing dropped here can be run
+      - /tmp:size=64m,mode=1777,noexec,nosuid,nodev
     security_opt:
       - no-new-privileges:true
+      - seccomp=builtin          # never unconfined
+      - apparmor=docker-default
     cap_drop:
       - ALL
     cpus: 1.0
     mem_limit: 512m
     pids_limit: 256
+    ulimits:
+      nofile: { soft: 1024, hard: 2048 }
+      nproc: 256
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/').then(()=>process.exit(0)).catch(()=>process.exit(1))"]
       interval: 30s
@@ -129,19 +150,24 @@ services:
     profiles: [dev]
     image: cloudflare/cloudflared:2026.9.1
     restart: unless-stopped
+    init: true
     user: "65532:65532"
     read_only: true
     security_opt:
       - no-new-privileges:true
+      - seccomp=builtin          # never unconfined
+      - apparmor=docker-default
     cap_drop:
       - ALL
     command: ["tunnel", "--no-autoupdate", "run"]
     environment:
-      TUNNEL_TOKEN: ${DEV_TUNNEL_TOKEN:-}
+      TUNNEL_TOKEN: ${DEV_TUNNEL_TOKEN:?}
     tmpfs:
-      - /tmp:size=8m
+      - /tmp:size=8m,mode=1777,noexec,nosuid,nodev
     mem_limit: 128m
     pids_limit: 64
+    ulimits:
+      nofile: { soft: 512, hard: 1024 }
     depends_on:
       website-dev:
         condition: service_healthy

@@ -31,6 +31,11 @@ jobs:
           fi
           echo "no hardcoded credentials found"
 
+      # the compose file comes from this repository and the deploy account can
+      # reach the Docker socket, so it gets whatever it asks for
+      - name: Refuse a compose file that weakens isolation
+        run: python3 scripts/check-compose.py docker-compose.yml
+
       - name: Resolve the environment from the branch
         id: m
         run: |
@@ -60,15 +65,38 @@ jobs:
         run: |
           case "$PROFILE" in prod|dev) ;; *) echo "refusing '$PROFILE'"; exit 1 ;; esac
 
-          for v in SUPABASE_URL SUPABASE_PUBLISHABLE_KEY SUPABASE_SERVICE_ROLE_KEY TUNNEL_TOKEN; do
-            eval "val=\${$v}"
-            test -n "$val" || { echo "::error::$v is not set for this environment"; exit 1; }
+          # production must be complete before it ships; dev only needs enough
+          # to boot, so a half-configured dev environment is not a blocker
+          if [ "$PROFILE" = prod ]; then
+            required="SUPABASE_URL SUPABASE_PUBLISHABLE_KEY SUPABASE_SERVICE_ROLE_KEY TUNNEL_TOKEN"
+            optional="RESEND_API_KEY PAYMENTS_CLIENT_TOKEN"
+          else
+            required="SUPABASE_URL SUPABASE_PUBLISHABLE_KEY TUNNEL_TOKEN"
+            optional="SUPABASE_SERVICE_ROLE_KEY RESEND_API_KEY PAYMENTS_CLIENT_TOKEN"
+          fi
+
+          missing=""
+          for v in $required; do
+            eval "val=\${$v:-}"
+            [ -n "$val" ] || missing="$missing $v"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::$PROFILE is missing:$missing"
+            exit 1
+          fi
+
+          for v in $optional; do
+            eval "val=\${$v:-}"
+            [ -n "$val" ] || {
+              echo "::warning::$v is not set for $PROFILE — features needing it will not work"
+              echo "- \`$v\` not set for \`$PROFILE\`" >> "$GITHUB_STEP_SUMMARY"
+            }
           done
 
           BUILT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
           # prefix every value for this environment only, so the other profile's
-          # required variables stay unset and its services are untouched
+          # variables stay unset and its services are untouched
           if [ "$PROFILE" = prod ]; then P=PROD; else P=DEV; fi
           export ${P}_SHA="$SHA" ${P}_REF="$REF" ${P}_BUILT="$BUILT" \
                  ${P}_SUPABASE_URL="$SUPABASE_URL" \
@@ -86,6 +114,7 @@ jobs:
       - name: Smoke test
         env:
           PORT: ${{ steps.m.outputs.port }}
+          PROFILE: ${{ steps.m.outputs.profile }}
         run: |
           for i in $(seq 1 30); do
             code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 \
@@ -94,8 +123,16 @@ jobs:
               echo "responded with $code"
               curl -s --max-time 5 "http://127.0.0.1:$PORT/build.json" || true
               echo
-              # a 5xx means the server is up but rendering is broken
-              [ "$code" -lt 500 ] || { echo "::error::server returned $code"; break; }
+              if [ "$code" -ge 500 ]; then
+                # a 5xx on dev is usually a missing optional credential, so say
+                # so and carry on; on production it is a failed deploy
+                if [ "$PROFILE" = prod ]; then
+                  echo "::error::server returned $code"
+                  docker compose -p web logs --tail=60
+                  exit 1
+                fi
+                echo "::warning::dev returned $code — likely an unset optional credential"
+              fi
               exit 0
             fi
             sleep 2

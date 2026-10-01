@@ -7,7 +7,27 @@ one compose file, each behind its own Cloudflare tunnel.
 | Branch | GitHub environment | Profile | Containers | Host port |
 |---|---|---|---|---|
 | `main` | `production` | `prod` | `web-website-prod-1`, `web-tunnel-prod-1` | 3000 |
-| `dev` | `development` | `dev` | `web-website-dev-1`, `web-tunnel-dev-1` | 3001 |
+| `dev` | `dev` | `dev` | `web-website-dev-1`, `web-tunnel-dev-1` | 3001 |
+
+The two environments are checked to different standards, deliberately.
+
+| | production | dev |
+|---|---|---|
+| `SUPABASE_URL` | required | required |
+| `SUPABASE_PUBLISHABLE_KEY` | required | required |
+| `TUNNEL_TOKEN` | required | required |
+| `SUPABASE_SERVICE_ROLE_KEY` | required | warn only |
+| `RESEND_API_KEY` | warn only | warn only |
+| `PAYMENTS_CLIENT_TOKEN` | warn only | warn only |
+
+A missing optional value is a warning in the job summary rather than a failed
+deploy, so a half-configured dev environment still ships. A 5xx from the smoke
+test fails production and only warns on dev, for the same reason: on dev it is
+usually an unset key, on production it is a broken release.
+
+Nothing is shared between them. Each reads its own GitHub environment, and the
+deploy step exports values under a `PROD_` or `DEV_` prefix so the other
+profile's variables stay unset and its containers are never touched.
 
 Both listen on 4000 inside the container. Nothing is built on GitHub's runners:
 the deploy job checks out, builds the image on the host, and starts it.
@@ -36,7 +56,8 @@ as published the moment the site is live):
 
 On `production`, set *Deployment branches* to selected branches → `main`. That
 policy is the only thing stopping a `dev` branch from reading production's
-service-role key.
+service-role key — the runner label cannot do it, since labels are chosen in the
+workflow file.
 
 ## Nothing is hardcoded
 
@@ -87,6 +108,44 @@ Returns the commit, branch and build time baked into the running image.
 
 The deploy job smoke-tests the same port and fails on a 5xx, so a build that
 compiles but cannot render is caught rather than reported as success.
+
+## Container isolation
+
+Nothing here makes a container a security boundary in the way a VM is. The aim
+is that an escape lands somewhere useless rather than that it is impossible.
+
+| Control | What it denies |
+|---|---|
+| `user: 1000:1000` | no root inside the container |
+| daemon `userns-remap` | and container root is an unprivileged host uid anyway |
+| `read_only: true` | no writable path to stage anything in |
+| `tmpfs … noexec,nosuid,nodev` | `/tmp` is writable but nothing there can be run |
+| `cap_drop: ALL` | no capability to abuse, not even the default set |
+| `no-new-privileges:true` | a setuid binary cannot regain anything |
+| `seccomp=builtin`, `apparmor=docker-default` | stated explicitly so nobody sets `unconfined` |
+| `init: true` | a real PID 1, so killed processes are reaped |
+| `mem_limit`, `cpus`, `pids_limit`, `ulimits` | a runaway cannot starve the host |
+| separate networks | dev and production cannot reach each other |
+| no host mounts | nothing of the host is visible inside |
+
+The weakest point is not any of those: it is that this file comes from the
+repository, and the deploy account can reach the Docker socket. A pull request
+adding `privileged: true` would undo all of it. So `scripts/check-compose.py`
+runs before every deploy and refuses the file unless each service is non-root,
+read-only, capability-dropped, memory-limited, `noexec` on tmpfs, and free of
+`privileged`, `userns_mode`, `network_mode`, `pid`, `ipc`, `cap_add`, `devices`,
+`sysctls`, host path mounts and any `unconfined` sandbox.
+
+Run it yourself before committing a change:
+
+```bash
+python3 scripts/check-compose.py docker-compose.yml
+```
+
+What remains, and cannot be fixed by a flag: a kernel container-escape
+vulnerability, and the fact that anyone who can merge to `main` can change what
+runs. Keep the repository private, protect `main` with required reviews, and
+patch the host.
 
 ## Notes on the container
 
